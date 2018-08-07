@@ -9,6 +9,7 @@ body {
 #main-nav {
   background: #3b4a5f;
 }
+h2,
 .brass-tacks,
 #main-nav #nav-brand {
   font-family: 'Libre Baskerville', serif;
@@ -26,6 +27,7 @@ address,
   text-align: center;
 }
 a,
+h2,
 a:hover,
 .schedule,
 #main-nav a:hover,
