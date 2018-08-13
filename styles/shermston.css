@@ -62,6 +62,14 @@ a:hover {
 #main-content {
   text-align: justify;
 }
+.blurb h2 {
+  text-align: left;
+  text-transform: uppercase;
+}
+#hotel,
+.schedule {
+  text-align: center;
+}
 /*sm*/
 @media (min-width: 576px) {
   #main-nav #nav-brand {
@@ -81,6 +89,9 @@ a:hover {
   }
   #media-state {
     --state:md;
+  }
+  #hotel .maybe-break {
+    display: none;
   }
   .md-plus {
     display: block;
@@ -102,4 +113,8 @@ a:hover {
   }
 }
 /*xl*/
-/* @media (min-width: 1200px) { } */
+@media (min-width: 1200px) {
+  body {
+    font-size: 1rem;
+  }
+}
