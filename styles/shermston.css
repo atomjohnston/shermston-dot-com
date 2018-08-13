@@ -1,18 +1,20 @@
-body, html {
+html, body {
   height: 100%;
 }
 body {
   font-family: 'Montserrat';
   background: #3b4a5f;
   color: white;
+  font-size: 0.8rem;
 }
 #main-nav {
   background: #3b4a5f;
 }
 h2,
-.brass-tacks,
+#brass-tacks,
 #main-nav #nav-brand {
   font-family: 'Libre Baskerville', serif;
+  font-size: 1rem;
 }
 address,
 .note {
@@ -22,9 +24,10 @@ address,
   color: white;
   font-weight: bold;
 }
-.brass-tacks {
+#brass-tacks {
   background: rgb(59, 74, 95, 0.85);
   text-align: center;
+  border-radius: 2em;
 }
 a,
 h2,
@@ -38,29 +41,65 @@ a:hover {
   text-decoration: underline;
 }
 .parallax { 
-  background-image: url("../images/kat-and-adam-2.jpg");
+  background-image: url("../images/kat-and-adam-3.jpg");
   height: 100%;
   background-attachment: fixed;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
 }
-.content {
-  background: rgb(59, 74, 95, 0.85);
-  margin-left: 60%;
+#media-state {
+  display: none;
+  --state:xs;
 }
-@media screen and (max-width: 1100px) {
-  .parallax {
-    background-image: url("../images/kat-and-adam-2a.jpg");
-  }
+.maybe-break {
+  display: block;
 }
-@media screen and (max-width: 768px) {
-  .parallax {
-    background-image: url("../images/kat-and-adam-3.jpg");
-  }
+.md-plus,
+.lg-plus {
+  display: none;
 }
-@media screen and (max-width: 576px) {
+#main-content {
+  text-align: justify;
+}
+/*sm*/
+@media (min-width: 576px) {
   #main-nav #nav-brand {
-    font-size: 1rem;
+    font-size: 1.25rem;
+  }
+  #nav-brand .maybe-break {
+    display: none;
+  }
+  #media-state {
+    --state:sm;
   }
 }
+/*md*/
+@media (min-width: 768px) {
+  .parallax {
+    background-image: url(../images/kat-and-adam-2a.jpg);
+  }
+  #media-state {
+    --state:md;
+  }
+  .md-plus {
+    display: block;
+  }
+}
+/*lg*/
+@media (min-width: 992px) {
+  .parallax {
+    background-image: url(../images/kat-and-adam-2.jpg);
+  }
+  .maybe-break {
+    display: none;
+  }
+  #media-state {
+    --state:lg;
+  }
+  .lg-plus {
+    display: block;
+  }
+}
+/*xl*/
+/* @media (min-width: 1200px) { } */
