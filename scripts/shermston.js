@@ -3,6 +3,7 @@
 var cache = {
     mediaState: $('#media-state'),
     mainContent: $('.main-content'),
+    skyline: $('#skyline'),
 }
 
 var compose2 = function (f, g) {
@@ -27,6 +28,10 @@ var onMedium = function () {
 
 var onLarge = function () { }
 
+var scaleSkyline = function () {
+    cache.skyline.css('height', Math.floor((window.innerWidth / window.innerHeight) * 100).toString() + '%');
+}
+
 var getHandler = function (ms) {
     switch (ms) {
         case 'xs':
@@ -38,9 +43,9 @@ var getHandler = function (ms) {
 }
 
 var resizeFn = function () {
-    getHandler(getMediaState())();
+    compose2(getHandler(getMediaState()), scaleSkyline)();
 }
 
 resizeFn();
 
-$(window).resize(resizeFn);
+//$(window).resize(resizeFn);
