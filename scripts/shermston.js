@@ -2,7 +2,7 @@
 
 var cache = {
     mediaState: $('#media-state'),
-    mainContent: $('#main-content'),
+    mainContent: $('.main-content'),
 }
 
 var compose2 = function (f, g) {
