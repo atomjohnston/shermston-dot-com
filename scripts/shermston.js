@@ -49,6 +49,14 @@ var getHandler = function (ms) {
 
 var resizeFn = compose(getHandler(getMediaState()), scaleSkyline);
 
+$('.nav-link').on('click', function (e) {
+    var target = $(e.target).attr('scroll-to');
+    $('.navbar-toggler').click();
+    if (!target)
+        return;
+    window.scrollTo(0, $(target).offset().top - (window.innerHeight / 3));
+});
+
 resizeFn();
 
 //$(window).resize(resizeFn);
