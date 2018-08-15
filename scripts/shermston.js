@@ -3,12 +3,17 @@
 var cache = {
     mediaState: $('#media-state'),
     mainContent: $('.main-content'),
-    skyline: $('#skyline'),
+    separators: $('.separator-image'),
 }
 
-var compose2 = function (f, g) {
+var compose = function () {
+    var fnClosure = arguments;
     return function (x) {
-        return f(g(x));
+        var stack = [x];
+        for (var i = fnClosure.length - 1; i >= 0; i--) {
+            stack.push(fnClosure[i](stack.pop()));
+        }
+        return stack.pop();
     }
 }
 
@@ -29,7 +34,7 @@ var onMedium = function () {
 var onLarge = function () { }
 
 var scaleSkyline = function () {
-    cache.skyline.css('height', Math.floor((window.innerWidth / window.innerHeight) * 100).toString() + '%');
+    cache.separators.css('height', Math.floor(((window.innerWidth / window.innerHeight) * 100) + 1).toString() + '%');
 }
 
 var getHandler = function (ms) {
@@ -37,14 +42,12 @@ var getHandler = function (ms) {
         case 'xs':
         case 'sm': return onSmall;
         case 'lg':
-        case 'xl': return compose2(onLarge, onMedium);
+        case 'xl': return compose(onLarge, onMedium);
         default:   return onMedium;
     }
 }
 
-var resizeFn = function () {
-    compose2(getHandler(getMediaState()), scaleSkyline)();
-}
+var resizeFn = compose(getHandler(getMediaState()), scaleSkyline);
 
 resizeFn();
 

@@ -25,7 +25,7 @@ address,
   font-weight: bold;
 }
 .clearish-blue {
-  background: rgba(59, 74, 95, 0.85);
+  background: rgba(59, 74, 95, 0.75);
 }
 #brass-tacks {
   text-align: center;
@@ -47,11 +47,25 @@ a:hover {
   height: 100%;
   background-size: cover;
 }
-#skyline {
-  background-image: url(../images/pvd-skyline-1.jpg);
+#banner div.row:first-child {
+  height: 8%;
+}
+.separator-image {
   background-size: contain;
   width: 100%;
   height: 50%;
+}
+#skyline {
+  background-image: url(../images/pvd-skyline-1.jpg);
+}
+#station {
+  background-image: url(../images/power-station.jpg);
+}
+#capitol {
+  background-image: url(../images/capitol-sunset.jpg);
+}
+#luau {
+  background-image: url(../images/luau.jpg);
 }
 .parallax {
   /*background-attachment: fixed;*/
@@ -69,36 +83,36 @@ a:hover {
 .lg-plus {
   display: none;
 }
-#main-content {
+.main-content {
   text-align: justify;
 }
 .blurb h2 {
   text-align: left;
   text-transform: uppercase;
 }
-#hotel,
+#hotel .main-content,
 .schedule {
   text-align: center;
 }
 /*sm*/
 @media (min-width: 576px) {
+  #media-state {
+    --state:sm;
+  }
   #main-nav #nav-brand {
     font-size: 1.25rem;
   }
   #nav-brand .maybe-break {
     display: none;
   }
-  #media-state {
-    --state:sm;
-  }
 }
 /*md*/
 @media (min-width: 768px) {
-  #banner {
-    background-image: url(../images/kat-and-adam-2a.jpg);
-  }
   #media-state {
     --state:md;
+  }
+  #banner {
+    background-image: url(../images/kat-and-adam-2a.jpg);
   }
   #hotel .maybe-break {
     display: none;
@@ -109,6 +123,9 @@ a:hover {
 }
 /*lg*/
 @media (min-width: 992px) {
+  #media-state {
+    --state:lg;
+  }
   #banner {
     background-image: url(../images/kat-and-adam-2.jpg);
   }
@@ -117,9 +134,6 @@ a:hover {
   }
   .maybe-break {
     display: none;
-  }
-  #media-state {
-    --state:lg;
   }
   .lg-plus {
     display: block;
