@@ -69,6 +69,9 @@ a:hover {
 }
 #luau {
   background-image: url(../images/sm/luau.jpg);
+  background-size: cover;
+  width: 100%;
+  height: 50%;
 }
 .parallax {
   background-position: center;
@@ -80,10 +83,6 @@ a:hover {
 }
 .maybe-break {
   display: block;
-}
-.md-plus,
-.lg-plus {
-  display: none;
 }
 .main-content {
   text-align: justify;
@@ -123,17 +122,20 @@ a:hover {
     background-image: url(../images/kat-and-adam-2a.jpg);
   }
   #skyline {
-    background-size: cover;
     background-image: url(../images/md/skyline-a.jpg);
+  }
+  #luau {
+    height: 100%;
+    background-size: contain;
+    background-position: bottom;
   }
   .separator-image {
     height: 33%;
+    background-size: cover;
+    background-position: bottom;
   }
   #hotel .maybe-break {
     display: none;
-  }
-  .md-plus {
-    display: block;
   }
 }
 /*lg*/
@@ -149,9 +151,6 @@ a:hover {
   }
   .maybe-break {
     display: none;
-  }
-  .lg-plus {
-    display: block;
   }
 }
 /*xl
