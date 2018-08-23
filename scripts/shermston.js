@@ -6,6 +6,8 @@ var cache = {
     separators: $('.separator-image'),
 }
 
+var states = Object.freeze(['xs', 'sm', 'md', 'lg', 'xl']);
+
 var compose = function () {
     var fnClosure = arguments;
     return function (x) {
@@ -17,37 +19,57 @@ var compose = function () {
     }
 }
 
+var partial = function () {
+    var aargs = Array.from(arguments);
+    return function(bargs) {
+        var fn = aargs.shift();
+        for (var i = 0; bargs && i < bargs.length; i++) {
+            aargs.push(bargs[i]);
+        }
+        return fn.apply(null, aargs);
+    }
+}
+
 var getMediaState = function () {
     return cache.mediaState.css('--state');
 }
 
-var onSmall = function () {
-    cache.mainContent.addClass('col');
-    cache.mainContent.removeClass('col-10');
+var adjustContentWidth = function (targetState) {
+    var targetWidth = getWidth(targetState);
+    if (cache.mainContent.hasClass(targetWidth))
+        return;
+    var removeUs = states.filter(function (st) { return st !== targetState }).map(function (st) { return getWidth(st); });
+    for (var i = 0; i < removeUs.length; i++) {
+        cache.mainContent.removeClass(removeUs[i]);
+    }
+    cache.mainContent.addClass(targetWidth);
 }
 
-var onMedium = function () {
-    cache.mainContent.addClass('col-10');
-    cache.mainContent.removeClass('col');
-}
-
-var onLarge = function () { }
-
-var scaleSkyline = function () {
+var scaleSeparators = function () {
     cache.separators.css('height', Math.floor(((window.innerWidth / window.innerHeight) * 100) + 1).toString() + '%');
 }
 
 var getHandler = function (ms) {
     switch (ms) {
         case 'xs':
-        case 'sm': return onSmall;
+        case 'sm': return compose(partial(adjustContentWidth, 'sm'), scaleSeparators);
+        case 'md': return partial(adjustContentWidth, 'md');
         case 'lg':
-        case 'xl': return compose(onLarge, onMedium);
-        default:   return onMedium;
+        case 'xl': return partial(adjustContentWidth, 'lg');
     }
 }
 
-var resizeFn = compose(getHandler(getMediaState()), scaleSkyline);
+var getWidth = function (ms) {
+    switch (ms) {
+        case 'xs':
+        case 'sm': return 'col';
+        case 'md': return 'col-10'
+        case 'lg':
+        case 'xl': return 'col-6';
+    }
+}
+
+var resizeFn = getHandler(getMediaState());
 
 $('.nav-link').on('click', function (e) {
     var target = $(e.target).attr('scroll-to');
