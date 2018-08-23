@@ -5,7 +5,7 @@ body {
   font-family: 'Montserrat';
   background: #3b4a5f;
   color: white;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
 }
 #main-nav {
   background: #3b4a5f;
@@ -15,6 +15,9 @@ h2,
 #main-nav #nav-brand {
   font-family: 'Libre Baskerville', serif;
   font-size: 1rem;
+}
+.nav-link {
+  cursor: pointer;
 }
 address,
 .note {
@@ -56,19 +59,18 @@ a:hover {
   height: 50%;
 }
 #skyline {
-  background-image: url(../images/pvd-skyline-1.jpg);
+  background-image: url(../images/sm/skyline.jpg);
 }
 #station {
-  background-image: url(../images/power-station.jpg);
+  background-image: url(../images/sm/station.jpg);
 }
 #capitol {
-  background-image: url(../images/capitol-sunset.jpg);
+  background-image: url(../images/sm/capitol.jpg);
 }
 #luau {
-  background-image: url(../images/luau.jpg);
+  background-image: url(../images/sm/luau.jpg);
 }
 .parallax {
-  /*background-attachment: fixed;*/
   background-position: center;
   background-repeat: no-repeat;
 }
@@ -108,11 +110,24 @@ a:hover {
 }
 /*md*/
 @media (min-width: 768px) {
+  body {
+    font-size: 1rem;
+  }
   #media-state {
     --state:md;
   }
+  .parallax {
+    background-attachment: fixed;
+  }
   #banner {
     background-image: url(../images/kat-and-adam-2a.jpg);
+  }
+  #skyline {
+    background-size: cover;
+    background-image: url(../images/md/skyline-a.jpg);
+  }
+  .separator-image {
+    height: 33%;
   }
   #hotel .maybe-break {
     display: none;
@@ -139,9 +154,6 @@ a:hover {
     display: block;
   }
 }
-/*xl*/
+/*xl
 @media (min-width: 1200px) {
-  body {
-    font-size: 1rem;
-  }
-}
+}*/
