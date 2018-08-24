@@ -93,10 +93,6 @@ a:hover {
 .schedule {
   text-align: center;
 }
-.jumped-to {
-  position: relative;
-  bottom: 33%;
-}
 @media (orientation: landscape) {
   #banner {
     background-image: url(../images/kat-and-adam-2a.jpg);

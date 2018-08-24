@@ -1,13 +1,19 @@
 "use strict";
 
-var cache = {
+var CACHE = {
+    _inner: { },
+    navs: $('.navbar-nav > li > a'),
     mediaState: $('#media-state'),
     separators: $('.separator-image, .scale'),
-    navs: $('.navbar-nav > li > a'),
     collapsible: $('.navbar-collapse'),
+    get: function (query) {
+        if (!(query in this._inner))
+            this._inner[query] = $(query);
+        return this._inner[query];
+    }
 }
 
-var sizeEnum = Object.freeze({'xs': 0, 'sm': 1, 'md': 2, 'lg': 3, 'xl': 4});
+var SIZE = Object.freeze({xs: 0, sm: 1, md: 2, lg: 3, xl: 4});
 
 var compose = function () {
     var fnClosure = arguments;
@@ -32,11 +38,15 @@ var partial = function () {
 }
 
 var getMediaState = function () {
-    return cache.mediaState.css('--state');
+    return CACHE.mediaState.css('--state');
+}
+
+var getScreensize = function () {
+    return SIZE[getMediaState()];
 }
 
 var scaleSeparators = function () {
-    cache.separators.css('height', Math.floor(((window.innerWidth / window.innerHeight) * 100) + 1).toString() + '%');
+    CACHE.separators.css('height', Math.floor(((window.innerWidth / window.innerHeight) * 100) + 1).toString() + '%');
 }
 
 var getHandler = function (ms) {
@@ -45,23 +55,34 @@ var getHandler = function (ms) {
     return function () { };
 }
 
-var specialScroll = function (ref) {
-    var div = document.getElementById(ref.substring(1, ref.indexOf('-')));
+var largerScroll = function (ref) {
+    var div = CACHE.get(ref)[0];
     if (!div)
-        return;
+        return true;
     div.scrollIntoView(false);
+    return false;
+}
+
+var smallerScroll = function (ref) {
+    window.scrollTo(0, CACHE.get(ref).offset().top - (window.innerHeight / 3));
+    return false;
+}
+
+var navigate = function (size, href) {
+    if (!href || href.length <= 1)
+        return true; // propagate click
+    return size < SIZE.md
+        ? smallerScroll(href)
+        : largerScroll(href);
 }
 
 var resizeFn = getHandler(getMediaState());
 
-cache.navs.on('click', function(e) {
-    cache.collapsible.collapse('hide');
-    if (sizeEnum.md <= sizeEnum[getMediaState()]) {
-        specialScroll(e.target.getAttribute('href'));
-        return false;
-    }
+CACHE.navs.on('click', function(e) {
+    CACHE.collapsible.collapse('hide');
+    return navigate(getScreensize(), e.target.getAttribute('href'));
 });
 
 resizeFn();
 
-$(window).resize(resizeFn);
+//$(window).resize(resizeFn);
