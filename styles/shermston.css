@@ -82,9 +82,6 @@ a:hover {
   display: none;
   --state:xs;
 }
-.maybe-break {
-  display: block;
-}
 .main-content {
   text-align: justify;
 }
@@ -95,6 +92,10 @@ a:hover {
 #hotel .main-content,
 .schedule {
   text-align: center;
+}
+.jumped-to {
+  position: relative;
+  bottom: 33%;
 }
 @media (orientation: landscape) {
   #banner {
@@ -108,9 +109,6 @@ a:hover {
   }
   #main-nav #nav-brand {
     font-size: 1.25rem;
-  }
-  #nav-brand .maybe-break {
-    display: none;
   }
 }
 /*md*/
@@ -133,18 +131,11 @@ a:hover {
   #skyline {
     background-image: url(../images/md/skyline.jpg);
   }
+  .separator-image,
   #luau {
     height: 100%;
     background-size: cover;
     background-position: top;
-  }
-  .separator-image {
-    height: 33%;
-    background-size: cover;
-    background-position: top;
-  }
-  #hotel .maybe-break {
-    display: none;
   }
 }
 /*lg*/
@@ -167,9 +158,6 @@ a:hover {
   #luau {
     background-image: url(../images/lg/waimoku.jpg);
     background-position: bottom left;
-  }
-  .maybe-break {
-    display: none;
   }
 }
 /*xl

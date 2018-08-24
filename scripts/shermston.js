@@ -2,8 +2,12 @@
 
 var cache = {
     mediaState: $('#media-state'),
-    separators: $('.separator-image, .scale')
+    separators: $('.separator-image, .scale'),
+    navs: $('.navbar-nav > li > a'),
+    collapsible: $('.navbar-collapse'),
 }
+
+var sizeEnum = Object.freeze({'xs': 0, 'sm': 1, 'md': 2, 'lg': 3, 'xl': 4});
 
 var compose = function () {
     var fnClosure = arguments;
@@ -41,8 +45,23 @@ var getHandler = function (ms) {
     return function () { };
 }
 
+var specialScroll = function (ref) {
+    var div = document.getElementById(ref.substring(1, ref.indexOf('-')));
+    if (!div)
+        return;
+    div.scrollIntoView(false);
+}
+
 var resizeFn = getHandler(getMediaState());
+
+cache.navs.on('click', function(e) {
+    cache.collapsible.collapse('hide');
+    if (sizeEnum.md <= sizeEnum[getMediaState()]) {
+        specialScroll(e.target.getAttribute('href'));
+        return false;
+    }
+});
 
 resizeFn();
 
-//$(window).resize(resizeFn);
+$(window).resize(resizeFn);
