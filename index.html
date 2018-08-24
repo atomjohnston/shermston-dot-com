@@ -16,14 +16,28 @@
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse text-uppercase" id="nav-targets">
-        <div class="navbar-nav ml-auto">
-          <a class="nav-item nav-link" href="#">Home</a>
-          <a class="nav-item nav-link" scroll-to="#venue">Venue</a>
-          <a class="nav-item nav-link" scroll-to="#schedule">Schedule</a>
-          <a class="nav-item nav-link" scroll-to="#hotel">Hotel</a>
-          <!-- <a class="nav-item nav-link" scroll-to="#pvd">Providence</a> -->
-          <a class="nav-item nav-link" scroll-to="#us">Us</a>
-        </div>
+        <ul class="nav navbar-nav ml-auto">
+          <li>
+            <a class="nav-item nav-link d-none d-lg-block" href="#">Home</a>
+            <a class="nav-item nav-link d-lg-none" data-toggle="collapse" data-target="#nav-targets" href="#">Home</a>
+          </li>
+          <li>
+            <a class="nav-item nav-link d-none d-lg-block" href="#where-target">Where</a>
+            <a class="nav-item nav-link d-lg-none" data-toggle="collapse" data-target="#nav-targets" href="#where-target">Where</a>
+          </li>
+          <li>
+            <a class="nav-item nav-link d-none d-lg-block" href="#when-target">When</a>
+            <a class="nav-item nav-link d-lg-none" data-toggle="collapse" data-target="#nav-targets" href="#when-target">When</a>
+          </li>
+          <li>
+            <a class="nav-item nav-link d-none d-lg-block" href="#hotel-target">Hotel</a>
+            <a class="nav-item nav-link d-lg-none" data-toggle="collapse" data-target="#nav-targets" href="#hotel-target">Hotel</a>
+          </li>
+          <li>
+            <a class="nav-item nav-link d-none d-lg-block" href="#us-target">Us</a>
+            <a class="nav-item nav-link d-lg-none" data-toggle="collapse" data-target="#nav-targets" href="#us-target">Us</a>
+          </li>
+        </ul>
       </div>
     </nav>
     <div id="banner" class="parallax container-fluid">
@@ -46,10 +60,11 @@
         <div class="col-md-1"></div>
       </div>
     </div>
-    <div id="venue" class="container-fluid blurb">
+    <div id="where-target" style="position: relative; bottom: 33%"></div>
+    <div id="where" class="container-fluid blurb">
       <div class="row my-4">
         <div class="col-md"></div>
-        <div class="main-content col-sm col-md-10 col-lg-7"><h2>Venue</h2></div>
+        <div class="main-content col-sm col-md-10 col-lg-7"><h2>Where</h2></div>
         <div class="col-md"></div>
       </div>
       <div class="row">
@@ -70,10 +85,11 @@
       <div class="row my-1"></div>
     </div>
     <div id="skyline" class="parallax container-fluid separator-image"></div>
-    <div id="schedule" class="container-fluid blurb">
+    <div id="when-target" style="position: relative; bottom: 33%"></div>
+    <div id="when" class="container-fluid blurb">
       <div class="row my-4">
         <div class="col-md"></div>
-        <div class="main-content col-sm col-md-10 col-lg-7"><h2>Schedule</h2></div>
+        <div class="main-content col-sm col-md-10 col-lg-7"><h2>When</h2></div>
         <div class="col-md"></div>
       </div>
       <div class="row">
@@ -89,6 +105,7 @@
       <div class="row my-3"></div>
     </div>
     <div id="station" class="parallax container-fluid separator-image"></div>
+    <div id="hotel-target" style="position: relative; bottom: 33%"></div>
     <div id="hotel" class="container-fluid blurb">
       <div class="row my-4">
         <div class="col-md"></div>
@@ -112,6 +129,7 @@
       <div class="row my-1"></div>
     </div>
     <div id="capitol" class="parallax container-fluid separator-image"></div>
+    <div id="us-target" style="position: relative; bottom: 33%"></div>
     <div id="us" class="container-fluid blurb">
       <div class="row my-4">
         <div class="col-md"></div>

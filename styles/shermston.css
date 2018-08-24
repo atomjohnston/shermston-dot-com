@@ -55,6 +55,7 @@ a:hover {
 }
 .separator-image {
   background-size: contain;
+  background-position: bottom;
   width: 100%;
   height: 50%;
 }
@@ -95,6 +96,11 @@ a:hover {
 .schedule {
   text-align: center;
 }
+@media (orientation: landscape) {
+  #banner {
+    background-image: url(../images/kat-and-adam-2a.jpg);
+  }
+}
 /*sm*/
 @media (min-width: 576px) {
   #media-state {
@@ -121,18 +127,21 @@ a:hover {
   #banner {
     background-image: url(../images/kat-and-adam-2a.jpg);
   }
+  #station {
+    background-image: url(../images/lg/station.jpg);
+  }
   #skyline {
-    background-image: url(../images/md/skyline-a.jpg);
+    background-image: url(../images/md/skyline.jpg);
   }
   #luau {
     height: 100%;
-    background-size: contain;
-    background-position: bottom;
+    background-size: cover;
+    background-position: top;
   }
   .separator-image {
     height: 33%;
     background-size: cover;
-    background-position: bottom;
+    background-position: top;
   }
   #hotel .maybe-break {
     display: none;
@@ -147,7 +156,17 @@ a:hover {
     background-image: url(../images/kat-and-adam-2.jpg);
   }
   #skyline {
-    background-image: url(../images/pvd-skyline.jpg);
+    background-image: url(../images/lg/skyline.jpg);
+  }
+  #station {
+    background-image: url(../images/lg/station.jpg);
+  }
+  #capitol {
+    background-image: url(../images/lg/capitol.jpg);
+  }
+  #luau {
+    background-image: url(../images/lg/waimoku.jpg);
+    background-position: bottom left;
   }
   .maybe-break {
     display: none;
