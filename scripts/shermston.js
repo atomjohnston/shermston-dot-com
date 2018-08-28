@@ -69,7 +69,7 @@ var smallerScroll = function (ref) {
 }
 
 var navigate = function (size, href) {
-    if (!href || href.length <= 1)
+    if (!href || href.length <= 1 || href[0] !== '#')
         return true; // propagate click
     return size < SIZE.md
         ? smallerScroll(href)
