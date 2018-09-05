@@ -63,18 +63,18 @@ def retrieve_guest(invite, name):
         return InviteStatus.WRONG_NAME, None
 
 
-def pipeline(*funcs):
-    def _pl(x):
-        for func in funcs:
-            x = func(x)
-        return x
-    return _pl
+def decode_auth(auth):
+    return pipe(
+        auth,
+        lambda s: s.split(' ').pop().encode('ascii'),
+        base64.decodebytes,
+        lambda b: b.decode('utf-8'),
+        lambda s: s.split(':'),
+        tuple,
+    )
 
 
-decode_auth = pipeline(
-    lambda s: s.split(' ').pop().encode('ascii'),
-    base64.decodebytes,
-    lambda b: b.decode('utf-8'),
-    lambda s: s.split(':'),
-    tuple,
-)
+def pipe(x, *funcs):
+    for func in funcs:
+        x = func(x)
+    return x
