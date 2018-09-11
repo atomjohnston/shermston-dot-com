@@ -28,17 +28,36 @@ var displayStart = function () {
     $('#start').removeClass('d-none');
 }
 
+var displayError = function (errorMessage) {
+    $('#update').addClass('d-none');
+    $('#start').addClass('d-none');
+    $('#thank-you').addClass('d-none');
+    $('#oops .message').html(errorMessage);
+    $('#oops').removeClass('d-none');
+}
+
 $('#submit-code').on('click', function() {
     var auth = window.btoa($('#surname').val() + ':' + $('#secret').val());
     var xhr = new XMLHttpRequest();
     xhr.open('GET', URL);
     xhr.setRequestHeader('Authorization', 'Basic: ' + auth);
     xhr.onload = function() {
-        if (xhr.status != 200)
-            throw 'unknown response ' + xhr.status
-        var response = JSON.parse(xhr.responseText)
-        sessionStorage.setItem('shermstonSession', response.session_id);
-        displayUpdate(response);
+        switch(xhr.status) {
+            case 200:
+                var response = JSON.parse(xhr.responseText)
+                sessionStorage.setItem('shermstonSession', response.session_id);
+                displayUpdate(response);
+                break;
+            case 401:
+                displayError('Seems like your invite code may have been mis-typed, you can <a href="javascript:location.reload()">try again</a>?');
+                break;
+            case 403:
+                displayError('Did you misspell your last name? You can <a href="javascript:location.reload()">try again</a>.');
+                break;
+            default:
+                displayError('Something went really wrong, please <a href="javascript:location.reload()">try again</a>.');
+                break;
+        }
     }
     xhr.send();
 });

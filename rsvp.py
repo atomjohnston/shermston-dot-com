@@ -7,7 +7,7 @@ from uuid import uuid4
 
 import redis
 from flask import Flask, request, jsonify, Response
-from werkzeug.exceptions import BadRequest, Forbidden, Unauthorized
+from werkzeug.exceptions import BadRequest, Forbidden, Unauthorized, HTTPException
 
 Guest = namedtuple('Guest', 'actual invite names max surname')
 
@@ -24,6 +24,17 @@ class InviteStatus(Enum):
     OKAY = 1
     WRONG_NAME = 2
     WRONG_INVITE = 3
+
+
+@app.errorhandler(Exception)
+def handle_error(e):
+    code = 500
+    if isinstance(e, HTTPException):
+        code = e.code
+    response = jsonify(error=str(e))
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.status_code = code
+    return response
 
 
 @app.route('/guest-count', methods=['GET', 'POST', 'OPTIONS'])
