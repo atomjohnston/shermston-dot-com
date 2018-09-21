@@ -49,7 +49,7 @@ $('#submit-code').on('click', function() {
                 displayUpdate(response);
                 break;
             case 401:
-                displayError('Seems like your invite code may have been mis-typed, you can <a href="javascript:location.reload()">try again</a>?');
+                displayError('Seems like your invite code may have been mis-typed (it\'s case-sensitive). You can <a href="javascript:location.reload()">try again</a>?');
                 break;
             case 403:
                 displayError('Did you misspell your last name? You can <a href="javascript:location.reload()">try again</a>.');
