@@ -31,13 +31,15 @@ class InviteStatus(Enum):
 def is_admin(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
-        passwd = rc.hget('users', request.authorization.username)#.decode('utf-8')
-        user_pass = hashlib.sha256(':'.join([os.environ.get('SHERMSTON_SALT'), request.authorization.password]).encode('utf-8')).hexdigest()
-        print(passwd, user_pass)
-        if not passwd == user_pass:
+        if not (hash_secret(request.authorization.password)
+                    == rc.hget('users', request.authorization.username)):
             raise Unauthorized()
         return f(*args, **kwargs)
     return decorated
+
+
+def hash_secret(secret):
+    return hashlib.sha256(':'.join([os.environ.get('SHERMSTON_SALT'), secret]).encode('utf-8')).hexdigest()
 
 
 @app.errorhandler(Exception)
@@ -109,7 +111,7 @@ def get_rsvp(authorization):
 
 
 def update_rsvp(headers, body_json):
-    guest = Guest(**(json.loads(session2guest(keys=[headers.get('Session-Id')]).decode('utf-8'))))
+    guest = Guest(**(json.loads(session2guest(keys=[headers.get('Session-Id')]))))
     update = body_json
     u_guest = guest._replace(actual=(update['count'] if update['count'] < guest.max else
                                      guest.max))
@@ -129,7 +131,7 @@ def retrieve_guest(invite, name):
     try:
         return (
             InviteStatus.OKAY,
-            Guest(**(json.loads(raw[name.lower().encode('utf-8')].decode('utf-8'))))
+            Guest(**(json.loads(raw[name.lower()])))
         )
     except KeyError:
         return InviteStatus.WRONG_NAME, None
