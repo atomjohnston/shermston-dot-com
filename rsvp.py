@@ -1,5 +1,7 @@
-import base64
+import functools
+import hashlib
 import json
+import os
 from enum import Enum
 from collections import namedtuple
 from textwrap import dedent
@@ -12,7 +14,7 @@ from werkzeug.exceptions import BadRequest, Forbidden, Unauthorized, HTTPExcepti
 Guest = namedtuple('Guest', 'actual invite names max surname')
 
 app = Flask(__name__)
-rc = redis.StrictRedis(encoding='utf-8')
+rc = redis.StrictRedis(encoding='utf-8', decode_responses=True)
 
 session2guest = rc.register_script(dedent("""\
     local s = redis.call('get', KEYS[1])
@@ -24,6 +26,18 @@ class InviteStatus(Enum):
     OKAY = 1
     WRONG_NAME = 2
     WRONG_INVITE = 3
+
+
+def is_admin(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        passwd = rc.hget('users', request.authorization.username)#.decode('utf-8')
+        user_pass = hashlib.sha256(':'.join([os.environ.get('SHERMSTON_SALT'), request.authorization.password]).encode('utf-8')).hexdigest()
+        print(passwd, user_pass)
+        if not passwd == user_pass:
+            raise Unauthorized()
+        return f(*args, **kwargs)
+    return decorated
 
 
 @app.errorhandler(Exception)
@@ -46,49 +60,66 @@ def guest_count():
         })
 
     if request.method == 'GET':
-        guest_name, invite = get_basic(request.headers.get('Authorization'))
-        i_status, guest = retrieve_guest(invite, guest_name)
-
-        if i_status == InviteStatus.WRONG_INVITE:
-            raise Unauthorized()
-
-        if i_status == InviteStatus.WRONG_NAME:
-            raise Forbidden()
-
-        session = uuid4()
-        pipe = rc.pipeline()
-        pipe.set(session, json.dumps({'name': guest.surname, 'invite': invite}))
-        pipe.expire(session, 3600)
-        pipe.execute()
-        response = jsonify(
-            guest_count=guest.actual,
-            invite_count=guest.max,
-            surname=guest.surname[0].upper() + guest.surname[1:].lower(),
-            session_id=session)
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        return response
+        return get_rsvp(request.authorization)
 
     if request.method == 'POST':
-        guest = Guest(**(json.loads(session2guest(keys=[request.headers.get('Session-Id')]).decode('utf-8'))))
-        update = request.get_json()
-        u_guest = guest._replace(actual=(update['count'] if update['count'] < guest.max else
-                                         guest.max))
-        pipe = rc.pipeline()
-        pipe.hset(guest.invite, u_guest.surname, json.dumps(u_guest._asdict()))
-        pipe.hset(guest.invite, 'attending', u_guest.actual)
-        pipe.execute()
-        response = jsonify(guest_count=u_guest.actual)
-        response.headers['Access-Control-Allow-Origin'] = '*'
-        return response
+        return update_rsvp(request.headers, request.get_json())
     
     raise BadRequest("yeah, I can't work with that")
 
 
-def get_basic(auth_header):
-    if not auth_header:
-        raise BadRequest('missing Authorization header')
-    print(auth_header)
-    return decode_auth(auth_header)
+@app.route('/tout-les-s-il-vous-plait', methods=['GET'])
+@is_admin
+def all_rsvps():
+    codes = rc.smembers('codes')
+    pipe = rc.pipeline()
+    for c in codes:
+        pipe.hgetall(c)
+    data = []
+    for g in pipe.execute():
+        data.append({
+            'attending': int(g['attending']),
+            'guests': [Guest(**json.loads(v))._asdict() for k, v in g.items() if not k == 'attending']
+        })
+    return jsonify(data)
+
+
+def get_rsvp(authorization):
+    guest_name, invite = authorization.username, authorization.password
+    i_status, guest = retrieve_guest(invite, guest_name)
+
+    if i_status == InviteStatus.WRONG_INVITE:
+        raise Unauthorized()
+
+    if i_status == InviteStatus.WRONG_NAME:
+        raise Forbidden()
+
+    session = uuid4()
+    pipe = rc.pipeline()
+    pipe.set(session, json.dumps({'name': guest.surname, 'invite': invite}))
+    pipe.expire(session, 3600)
+    pipe.execute()
+    response = jsonify(
+        guest_count=guest.actual,
+        invite_count=guest.max,
+        surname=guest.surname[0].upper() + guest.surname[1:].lower(),
+        session_id=session)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
+
+
+def update_rsvp(headers, body_json):
+    guest = Guest(**(json.loads(session2guest(keys=[headers.get('Session-Id')]).decode('utf-8'))))
+    update = body_json
+    u_guest = guest._replace(actual=(update['count'] if update['count'] < guest.max else
+                                     guest.max))
+    pipe = rc.pipeline()
+    pipe.hset(guest.invite, u_guest.surname, json.dumps(u_guest._asdict()))
+    pipe.hset(guest.invite, 'attending', u_guest.actual)
+    pipe.execute()
+    response = jsonify(guest_count=u_guest.actual)
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
 
 def retrieve_guest(invite, name):
@@ -102,20 +133,3 @@ def retrieve_guest(invite, name):
         )
     except KeyError:
         return InviteStatus.WRONG_NAME, None
-
-
-def decode_auth(auth):
-    return pipe(
-        auth,
-        lambda s: s.split(' ').pop().encode('ascii'),
-        base64.decodebytes,
-        lambda b: b.decode('utf-8'),
-        lambda s: s.split(':'),
-        tuple,
-    )
-
-
-def pipe(x, *funcs):
-    for func in funcs:
-        x = func(x)
-    return x
