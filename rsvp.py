@@ -57,7 +57,7 @@ def guest_count():
 
         session = uuid4()
         pipe = rc.pipeline()
-        pipe.set(session, json.dumps({'name': guest_name, 'invite': invite}))
+        pipe.set(session, json.dumps({'name': guest.surname, 'invite': invite}))
         pipe.expire(session, 3600)
         pipe.execute()
         response = jsonify(
