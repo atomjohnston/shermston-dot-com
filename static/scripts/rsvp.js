@@ -1,6 +1,6 @@
 "use strict";
 
-URL = 'http://127.0.0.1:5000/guest-count';
+URL = 'https://shermston.com/guest-count';
 
 var displayUpdate = function (response) {
     $('#update').removeClass('d-none');
@@ -40,7 +40,7 @@ $('#submit-code').on('click', function() {
     var auth = window.btoa($('#surname').val() + ':' + $('#secret').val());
     var xhr = new XMLHttpRequest();
     xhr.open('GET', URL);
-    xhr.setRequestHeader('Authorization', 'Basic: ' + auth);
+    xhr.setRequestHeader('Authorization', 'Basic ' + auth);
     xhr.onload = function() {
         switch(xhr.status) {
             case 200:

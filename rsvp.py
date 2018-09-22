@@ -31,9 +31,13 @@ class InviteStatus(Enum):
 def is_admin(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
+        if not request.authorization:
+            raise Unauthorized()
+
         if not (hash_secret(request.authorization.password)
                     == rc.hget('users', request.authorization.username)):
             raise Unauthorized()
+
         return f(*args, **kwargs)
     return decorated
 
