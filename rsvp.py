@@ -31,6 +31,10 @@ class InviteStatus(Enum):
 def is_admin(f):
     @functools.wraps(f)
     def decorated(*args, **kwargs):
+        sesh = request.headers.get('Session-Id')
+        if sesh and json.loads(rc.get(sesh))['role'] == 'admin':
+            return f(*args, **kwargs)
+
         if not request.authorization:
             raise Unauthorized()
 
@@ -77,6 +81,13 @@ def guest_count():
 @app.route('/tout-les-s-il-vous-plait', methods=['GET'])
 @is_admin
 def all_rsvps():
+    data = get_all()
+    return jsonify(
+        session_id=create_and_store_session(request.authorization.username, '', 'admin'),
+        responses=data)
+
+
+def get_all():
     codes = rc.smembers('codes')
     pipe = rc.pipeline()
     for c in codes:
@@ -87,11 +98,20 @@ def all_rsvps():
             'attending': int(g['attending']),
             'guests': [Guest(**json.loads(v))._asdict() for k, v in g.items() if not k == 'attending']
         })
-    return jsonify(data)
+    return data
+
+
+@app.route('/make-it-so', methods=['POST'])
+@is_admin
+def admin_guest_update():
+    body = request.get_json()
+    code, guest = retrieve_guest(body['invite'], body['name'])
+    set_guest_count(guest, body['count'])
+    return jsonify(responses=get_all())
 
 
 def get_rsvp(authorization):
-    guest_name, invite = authorization.username, authorization.password
+    guest_name, invite = authorization.username.strip(), authorization.password.strip()
     i_status, guest = retrieve_guest(invite, guest_name)
 
     if i_status == InviteStatus.WRONG_INVITE:
@@ -100,32 +120,46 @@ def get_rsvp(authorization):
     if i_status == InviteStatus.WRONG_NAME:
         raise Forbidden()
 
-    session = uuid4()
-    pipe = rc.pipeline()
-    pipe.set(session, json.dumps({'name': guest.surname, 'invite': invite}))
-    pipe.expire(session, 3600)
-    pipe.execute()
+    session_id = create_and_store_session(guest.surname, invite)
     response = jsonify(
         guest_count=guest.actual,
         invite_count=guest.max,
         surname=guest.surname[0].upper() + guest.surname[1:].lower(),
-        session_id=session)
+        session_id=session_id)
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
 
+def create_and_store_session(name, code, role='guest'):
+    session = uuid4()
+    pipe = rc.pipeline()
+    pipe.set(session, json.dumps({'name': name, 'invite': code, 'role': role}))
+    pipe.expire(session, 3600)
+    pipe.execute()
+    return session
+
+
+def guest_from_session_id(session_id):
+    return Guest(**(json.loads(session2guest(keys=[session_id]))))
+
+
 def update_rsvp(headers, body_json):
-    guest = Guest(**(json.loads(session2guest(keys=[headers.get('Session-Id')]))))
-    update = body_json
-    u_guest = guest._replace(actual=(update['count'] if update['count'] < guest.max else
+    response = jsonify(
+        guest_count=set_guest_count(
+            guest_from_session_id(headers.get('Session-Id')),
+            body_json['count']))
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
+
+
+def set_guest_count(guest, count):
+    u_guest = guest._replace(actual=(count if count < guest.max else
                                      guest.max))
     pipe = rc.pipeline()
     pipe.hset(guest.invite, u_guest.surname, json.dumps(u_guest._asdict()))
     pipe.hset(guest.invite, 'attending', u_guest.actual)
     pipe.execute()
-    response = jsonify(guest_count=u_guest.actual)
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    return response
+    return u_guest.actual
 
 
 def retrieve_guest(invite, name):
