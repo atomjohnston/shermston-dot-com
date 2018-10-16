@@ -45,8 +45,7 @@ const getErrorMessage = (status) => {
 
 $('#submit-code').on('click', async () => {
     try {
-        let responseText = await httpGet(basicAuth($('#surname').val(), $('#secret').val()), '/guest-count');
-        let response = JSON.parse(responseText)
+        let response = await httpGetJson(basicAuth($('#surname').val(), $('#secret').val()), '/guest-count');
         sessionStorage.setItem('shermstonSession', response.session_id);
         displayUpdate(response);
     }
@@ -57,8 +56,8 @@ $('#submit-code').on('click', async () => {
 
 $('#update-guests').on('click', async () => {
     try {
-        let responseText = await httpPost(sessionAuth(), '/guest-count', { count: parseInt($('#guests').val()) })
-        displayRsvp(JSON.parse(responseText));
+        let response = await httpPostJson(sessionAuth(), '/guest-count', { count: parseInt($('#guests').val()) })
+        displayRsvp(response);
     }
     catch (status) {
         throw 'unknown response ' + xhr.status;

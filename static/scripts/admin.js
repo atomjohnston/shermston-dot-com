@@ -1,6 +1,6 @@
 "use strict";
 
-import { httpGet, httpPost, basicAuth, sessionAuth } from './common';
+import { httpGetJson, httpPostJson, basicAuth, sessionAuth } from './common';
 
 
 const formatRsvpTable = (response) => {
@@ -57,15 +57,14 @@ const editRsvp = (e) => {
         let count = parseInt(countBtn.find('input').val());
         countBtn.html(count);
         updateBtn.addClass('d-none');
-        let body = await httpPost(sessionAuth(), '/make-it-so', { invite: invite, name: surname, count: count });
-        displayRsvps(JSON.parse(body).responses);
+        let response = await httpPostJson(sessionAuth(), '/make-it-so', { invite: invite, name: surname, count: count });
+        displayRsvps(response.responses);
     };
     updateBtn.on('click', curry(callback)(row.attr('id'), row.attr('surname')));
 }
 
 $('#get-rsvps').on('click', async () => {
-    let body = await httpGet(basicAuth($('#surname').val(), $('#secret').val()), '/tout-les-s-il-vous-plait');
-    let response = JSON.parse(body);
+    let response = await httpGetJson(basicAuth($('#surname').val(), $('#secret').val()), '/tout-les-s-il-vous-plait');
     sessionStorage.setItem('shermstonSession', response.session_id);
     displayRsvps(response.responses);
 });

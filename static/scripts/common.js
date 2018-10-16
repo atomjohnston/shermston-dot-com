@@ -19,15 +19,20 @@ const doHttp = (url, verb, contentType, auth, method, payload) => {
             xhr.setRequestHeader('Content-Type', contentType)
         if (auth)
             xhr.setRequestHeader(auth.name, header.value);
-        xhr.onload = () => xhr.status === 200
-            ? resolve(xhr.responseText)
-            : reject(xhr.status);
+        xhr.onload = () => {
+            return xhr.status === 200
+                ? resolve(xhr.responseText)
+                : reject(xhr.status);
+        }
         xhr.send(payload ? JSON.stringify(payload) : undefined);
     });
 }
 
 const httpGet = curry(doHttp)(URL, 'GET', undefined);
 const httpPost = curry(doHttp)(URL, 'POST', 'application/json');
+
+const httpGetJson = async (auth, method, payload) => JSON.parse(await httpGet(auth, method, payload));
+const httpPostJson = async (auth, method, payload) => JSON.parse(await httpPost(auth, method, payload));
 
 const toBasic = (name, passwd) => 'Basic ' + window.btoa(name + ':' + passwd);
 const toHeader = (name, value) => new { name: name, value: value };
