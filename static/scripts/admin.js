@@ -2,117 +2,101 @@
 
 URL = 'https://shermston.com';
 
+const curry = (fn) => {
+    const arity = fn.length;
+    return function $curry(...args) {
+        return args.length < arity
+            ? $curry.bind(null, ...args)
+            : fn.call(null, ...args);
+    };
+};
+  
+const toBasic = (name, passwd) => 'Basic ' + window.btoa(name + ':' + passwd);
+const toHeader = (name, value) => new { name: name, value: value };
+const basicAuth = (usr, passwd) => toHeader('Authorization', toBasic(usr, passwd));
+const sessionAuth = () => toHeader('Session-Id', sessionStorage.getItem('shermstonSession'));
 
-function toBasic (name, passwd) {
-    return 'Basic ' + window.btoa(name + ':' + passwd);
+const doHttp = (url, verb, contentType, auth, method, payload) => {
+    return new Promise((resolve, reject) => {
+        let xhr = new XMLHttpRequest();
+        xhr.open(verb, url + method);
+        if (contentType)
+            xhr.setRequestHeader('Content-Type', contentType)
+        if (auth)
+            xhr.setRequestHeader(auth.name, header.value);
+        xhr.onload = () => xhr.status === 200
+            ? resolve(xhr.responseText)
+            : reject(xhr.status);
+        xhr.send(payload ? JSON.stringify(payload) : undefined);
+    });
 }
 
-function toHeader(name, value) {
-    return { name: name, value: value };
-}
+const httpGet = curry(doHttp)(URL, 'GET', undefined);
+const httpPost = curry(doHttp)(URL, 'POST', 'application/json');
 
-function formatRsvpTable(response) {
-    var table = ''
-    response.sort(function (a, b) { return b.attending - a.attending; });
-    var formatNames = function (guests) {
-      var names = [];
-      for (var i = 0; i < guests.length; i++) {
-        for (var n = 0; n < guests[i].names.length; n++) {
-          names.push(guests[i].names[n] + ' ' + guests[i].surname);
-        }
-      }
-      return names.join(', ');
-    }
-    var total = 0;
-    for (var i = 0; i < response.length; i++) {
-        total += response[i].attending;
-        var row = 
-          '<tr id="' + response[i].guests[0].invite + '" surname="' + response[i].guests[0].surname + '">' + 
-            '<td class="attending">{}</td>'.replace('{}', response[i].attending) +
-            '<td><button type="submit" class="updater d-none">change</button></td>' +
-            '<td>{}</td>'.replace('{}', formatNames(response[i].guests)) +
-            '<td>{}</td>'.replace('{}', response[i].guests[0].invite) +
-          '</tr>';
-        table += row;
-    }
+const formatRsvpTable = (response) => {
+    response.sort((a, b) => b.attending - a.attending);
+    let formatNames = (guests) => guests.map((guest) => guest.names.reduce((p, c) => `${c} ${guest.surname}`));
+    let formatRow = (response) => {
+        return `<tr id="${response.guests[0].invite}" surname="${response.guests[0].surname}">
+            <td class="attending">${response.attending}</td>
+            <td><button type="submit" class="updater d-none">change</button></td>
+            <td>${formatNames(response.guests).join(', ')}</td>
+            <td>${response.guests[0].invite}</td>
+          </tr>`
+    };
+    let table =  response.reduce((prev, curr) => {
+        return {
+            attending: prev.attending + curr.attending,
+            table: prev.table + formatRow(curr)
+        };
+    });
     return {
-        total: total,
-        table: '<table class="table">' +
-                 '<thead>' +
-                   '<th scope="col">#</th>' +
-                   '<th scope="col"></th>' +
-                   '<th scope="col">names</th>' +
-                   '<th scope="col">invite</th>' +
-                 '</thead>' +
-                 '<tbody>' +
-                   table +
-                 '</tbody>' +
-               '</table>'
+        total: table.attending,
+        table: `<table class="table">
+                 <thead>
+                   <th scope="col">#</th>
+                   <th scope="col"></th>
+                   <th scope="col">names</th>
+                   <th scope="col">invite</th>
+                 </thead>
+                 <tbody>${table.table}</tbody>
+               </table>`
     };
 }
 
-function displayRsvps(response) {
-    var result = formatRsvpTable(response);
-    $('#rsvp-table').html(result.table);
-    $('#header').text('ATTENDING: ' + result.total);
+const displayRsvps = (response) => {
+    let result = formatRsvpTable(response);
     $('#admin-logon').addClass('d-none');
     $('#rsvp-table').removeClass('d-none');
+    $('#ref-but').removeClass('d-none');
+    $('#rsvp-table').html(result.table);
+    $('#header').text('ATTENDING: ' + result.total);
     $('#rsvp-table .attending').css('cursor', 'pointer');
     $('#rsvp-table .attending').on('click', editRsvp);
-    $('#ref-but').removeClass('d-none');
 }
 
-function editRsvp(e) {
-    var countBtn = $(e.target); 
-    var row = countBtn.closest('tr');
-    var updateBtn = row.find('.updater');
+const editRsvp = (e) => {
+    let countBtn = $(e.target); 
+    let row = countBtn.closest('tr');
+    let updateBtn = row.find('.updater');
     if (!updateBtn.hasClass('d-none'))
         return;
     updateBtn.removeClass('d-none');
-    var callback = (function(invite, surname) {
-        return function() {
-            var count = parseInt(countBtn.find('input').val());
-            var headers = [
-                toHeader('Session-Id', sessionStorage.getItem('shermstonSession')),
-                toHeader('Content-Type', 'application/json')
-            ];
-            var redisplay = function(sCode, body) {
-                if (sCode != 200)
-                    throw 'unknown response ' + sCode
-                displayRsvps(JSON.parse(body).responses);
-            }
-            updateBtn.addClass('d-none');
-            countBtn.html(count);
-            sendRequest('POST', URL + '/make-it-so',
-                JSON.stringify({ invite: invite, name: surname, count: count }),
-                headers, redisplay);
-        }
-    })(row.attr('id'), row.attr('surname'));
-    updateBtn.on('click', callback);
     countBtn.html('<input type="text" value="' + countBtn.text() + '"></input>');
+    let callback = async (invite, surname) => {
+        let count = parseInt(countBtn.find('input').val());
+        countBtn.html(count);
+        updateBtn.addClass('d-none');
+        let body = await httpPost(sessionAuth(), '/make-it-so', { invite: invite, name: surname, count: count });
+        displayRsvps(JSON.parse(body).responses);
+    };
+    updateBtn.on('click', curry(callback)(row.attr('id'), row.attr('surname')));
 }
 
-function sendRequest(verb, url, payload, headers, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open(verb, url);
-    headers = headers || [];
-    for (var i = 0; i < headers.length; i++) {
-        xhr.setRequestHeader(headers[i].name, headers[i].value);
-    }
-    xhr.onload = function() {
-        callback(xhr.status, xhr.responseText);
-    }
-    xhr.send(payload);
-}
-
-$('#get-rsvps').on('click', function() {
-    var callback = function(sCode, body) {
-        if (sCode != 200)
-            throw 'oh noes!'
-        var response = JSON.parse(body)
-        sessionStorage.setItem('shermstonSession', response.session_id);
-        displayRsvps(response.responses);
-    }
-    var headers = [toHeader('Authorization', toBasic($('#surname').val(), $('#secret').val()))];
-    sendRequest('GET', URL + '/tout-les-s-il-vous-plait', undefined, headers, callback);
+$('#get-rsvps').on('click', async () => {
+    let body = await httpGet(basicAuth($('#surname').val(), $('#secret').val()), '/tout-les-s-il-vous-plait');
+    let response = JSON.parse(body);
+    sessionStorage.setItem('shermstonSession', response.session_id);
+    displayRsvps(response.responses);
 });
