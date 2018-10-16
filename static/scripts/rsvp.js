@@ -1,34 +1,30 @@
 "use strict";
 
-URL = 'https://shermston.com/guest-count';
+import { httpGet, httpPost, basicAuth, sessionAuth } from './common';
 
-var displayUpdate = function (response) {
+
+const displayUpdate = (response) => {
     $('#update').removeClass('d-none');
     $('#start').addClass('d-none');
-    var guests = $('#guests');
+    let guests = $('#guests');
     guests.parent().find('label').text(response.surname + ' Guests:');
-    var menu = '';
-    for (var i = 0; i <= response.invite_count; i++) {
+    let menu = '';
+    for (let i = 0; i <= response.invite_count; i++) {
         menu += i == response.guest_count 
-            ? '<option value="_" selected="selected">_</option>'.replace(/_/g, i)
-            : '<option value="_">_</option>'.replace(/_/g, i);
+            ? `<option value="${i}" selected="selected">${i}</option>`
+            : `<option value="${i}">${i}</option>`;
     }
     guests.html(menu);
 }
 
-var displayRsvp = function (response) {
+const displayRsvp = (response) => {
     $('#update').addClass('d-none');
     $('#start').addClass('d-none');
     $('#rsvp-count').html(response.guest_count);
     $('#thank-you').removeClass('d-none');
 }
 
-var displayStart = function () {
-    $('#update').addClass('d-none');
-    $('#start').removeClass('d-none');
-}
-
-var displayError = function (errorMessage) {
+const displayError = (errorMessage) => {
     $('#update').addClass('d-none');
     $('#start').addClass('d-none');
     $('#thank-you').addClass('d-none');
@@ -36,41 +32,35 @@ var displayError = function (errorMessage) {
     $('#oops').removeClass('d-none');
 }
 
-$('#submit-code').on('click', function() {
-    var auth = window.btoa($('#surname').val() + ':' + $('#secret').val());
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', URL);
-    xhr.setRequestHeader('Authorization', 'Basic ' + auth);
-    xhr.onload = function() {
-        switch(xhr.status) {
-            case 200:
-                var response = JSON.parse(xhr.responseText)
-                sessionStorage.setItem('shermstonSession', response.session_id);
-                displayUpdate(response);
-                break;
-            case 401:
-                displayError('Seems like your invite code may have been mis-typed (it\'s case-sensitive). You can <a href="javascript:location.reload()">try again</a>?');
-                break;
-            case 403:
-                displayError('Did you misspell your last name? You can <a href="javascript:location.reload()">try again</a>.');
-                break;
-            default:
-                displayError('Something went really wrong, please <a href="javascript:location.reload()">try again</a>.');
-                break;
-        }
+const getErrorMessage = (status) => {
+    switch(status) {
+        case 401:
+            return 'Seems like your invite code may have been mis-typed (it\'s case-sensitive). You can <a href="javascript:location.reload()">try again</a>?';
+        case 403:
+            return 'Did you misspell your last name? You can <a href="javascript:location.reload()">try again</a>.';
+        default:
+            return 'Something went really wrong, please <a href="javascript:location.reload()">try again</a>.';
     }
-    xhr.send();
+}
+
+$('#submit-code').on('click', async () => {
+    try {
+        let responseText = await httpGet(basicAuth($('#surname').val(), $('#secret').val()), '/guest-count');
+        let response = JSON.parse(responseText)
+        sessionStorage.setItem('shermstonSession', response.session_id);
+        displayUpdate(response);
+    }
+    catch (status) {
+        displayError(getErrorMessage(status));
+    }
 });
 
-$('#update-guests').on('click', function () {
-    var xhr = new XMLHttpRequest();
-    xhr.open('POST', URL);
-    xhr.setRequestHeader('Session-Id', sessionStorage.getItem('shermstonSession'));
-    xhr.setRequestHeader('Content-Type', 'application/json');
-    xhr.onload = function() {
-        if (xhr.status != 200)
-            throw 'unknown response ' + xhr.status
-        displayRsvp(JSON.parse(xhr.responseText));
+$('#update-guests').on('click', async () => {
+    try {
+        let responseText = await httpPost(sessionAuth(), '/guest-count', { count: parseInt($('#guests').val()) })
+        displayRsvp(JSON.parse(responseText));
     }
-    xhr.send(JSON.stringify({count: parseInt($('#guests').val())}));
+    catch (status) {
+        throw 'unknown response ' + xhr.status;
+    }
 });
