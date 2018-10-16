@@ -1,5 +1,6 @@
 "use strict";
 
+import $ from 'jquery';
 import { httpGetJson, httpPostJson, basicAuth, sessionAuth } from './common';
 
 

@@ -1,5 +1,8 @@
 "use strict";
 
+import $ from 'jquery';
+import 'bootstrap';
+
 const CACHE = {
     _inner: { },
     navs: $('.navbar-nav > li > a'),

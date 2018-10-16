@@ -1,6 +1,8 @@
 "use strict";
 
-import { httpGet, httpPost, basicAuth, sessionAuth } from './common';
+import $ from 'jquery';
+import 'bootstrap';
+import { httpGetJson, httpPostJson, basicAuth, sessionAuth } from './common';
 
 
 const displayUpdate = (response) => {

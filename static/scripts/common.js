@@ -2,7 +2,7 @@
 
 URL = 'https://shermston.com';
 
-const curry = (fn) => {
+export const curry = (fn) => {
     const arity = fn.length;
     return function $curry(...args) {
         return args.length < arity
@@ -11,7 +11,7 @@ const curry = (fn) => {
     };
 };
 
-const doHttp = (url, verb, contentType, auth, method, payload) => {
+export const doHttp = (url, verb, contentType, auth, method, payload) => {
     return new Promise((resolve, reject) => {
         let xhr = new XMLHttpRequest();
         xhr.open(verb, url + method);
@@ -28,13 +28,13 @@ const doHttp = (url, verb, contentType, auth, method, payload) => {
     });
 }
 
-const httpGet = curry(doHttp)(URL, 'GET', undefined);
-const httpPost = curry(doHttp)(URL, 'POST', 'application/json');
+export const httpGet = curry(doHttp)(URL, 'GET', undefined);
+export const httpPost = curry(doHttp)(URL, 'POST', 'application/json');
 
-const httpGetJson = async (auth, method, payload) => JSON.parse(await httpGet(auth, method, payload));
-const httpPostJson = async (auth, method, payload) => JSON.parse(await httpPost(auth, method, payload));
+export const httpGetJson = async (auth, method, payload) => JSON.parse(await httpGet(auth, method, payload));
+export const httpPostJson = async (auth, method, payload) => JSON.parse(await httpPost(auth, method, payload));
 
-const toBasic = (name, passwd) => 'Basic ' + window.btoa(name + ':' + passwd);
-const toHeader = (name, value) => new { name: name, value: value };
-const basicAuth = (usr, passwd) => toHeader('Authorization', toBasic(usr, passwd));
-const sessionAuth = () => toHeader('Session-Id', sessionStorage.getItem('shermstonSession'));
+export const toBasic = (name, passwd) => 'Basic ' + window.btoa(name + ':' + passwd);
+export const toHeader = (name, value) => new { name: name, value: value };
+export const basicAuth = (usr, passwd) => toHeader('Authorization', toBasic(usr, passwd));
+export const sessionAuth = () => toHeader('Session-Id', sessionStorage.getItem('shermstonSession'));
